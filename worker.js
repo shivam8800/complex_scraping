@@ -14,6 +14,8 @@ queue.process('scrap', function (job, done) {
     scraping_website(job.data.link, done);
 })
 
+//your file will be save in tmp folder as Data.csv filename
+
 const scraping_website = async (link) => {
     const html = await rp(link);
     let filepath = '/tmp/Data.csv';

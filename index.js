@@ -11,7 +11,7 @@ queue.on('job enqueue', function () {
 })
 
 let job = queue.create('scrap', {
-    link: process.env.WEBSITE_URL
+    link: "https://www.giveindia.org/certified-indian-ngos"
 })
     .attempts(3) //if job fails retry in 3 times
     .backoff({ delay: 60 * 1000 }) // wait 60s before retry
