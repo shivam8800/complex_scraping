@@ -21,7 +21,7 @@ const scraping_website = async (link) => {
     let filepath = '/tmp/Data.csv';
     let writer = CsvWriter()
     writer.pipe(fs.createWriteStream(filepath))
-    cheerio('a', html).map(async (i, e) => {
+    const allPromise = cheerio('a', html).map(async (i, e) => {
         let second_link = e.attribs.href;
         if (second_link.includes('https://www.giveindia.org/nonprofit/') && second_link.length > 'https://www.giveindia.org/nonprofit/'.length) {
 
@@ -44,4 +44,11 @@ const scraping_website = async (link) => {
             return csv_row
         }
     }).get();
+    Promise.all(allPromise)
+        .then((result) => {
+            console.log("All done")
+        })
+        .catch((err) => {
+            console.log(`Uff in error ${err}`)
+        })
 };
