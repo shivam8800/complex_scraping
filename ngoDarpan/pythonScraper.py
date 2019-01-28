@@ -26,59 +26,99 @@ second_links = [driver.find_element_by_xpath(
 driver_two = webdriver.Chrome(
     executable_path="/usr/local/bin/chromedriver")
 
+print second_links[0], " second link"
+
 # going to one link
 driver_two.get(second_links[0])
-
-# sleep because we need to load full page
-sleep(5)
+driver.close()
 
 
-for i in range(1, 11):
-    # when page is loaded get the element
-    clickable_link = driver_two.find_element_by_xpath(
-        "/html/body/div[9]/div[1]/div[3]/div/div/div[2]/table/tbody/tr[" + str(i) + "]/td[2]/a")
+def getNextUrl(previousUrl, pageNo):
+    url_subelement_list = previousUrl.split("/")
+    url_subelement_list = url_subelement_list[:-1]
+    url_subelement_list.append(pageNo)
+    return "/".join(url_subelement_list)
 
-    # click on that element
-    clickable_link.click()
 
-    # for opening modal we need to wait
-    sleep(3)
+paginated_urls = []
 
-    # getting all data which we require
-    ngo_details = {
-        "Unique_Id": driver_two.find_element_by_xpath('//*[@id="UniqueID"]').text,
-        "Registered_With": driver_two.find_element_by_xpath('//*[@id="reg_with"]').text,
-        "Type_of_NGO": driver_two.find_element_by_xpath('//*[@id="ngo_type"]').text,
-        "Registration_No": driver_two.find_element_by_xpath('//*[@id="ngo_regno"]').text,
-        "Copy_of_Registration_Certificate": driver_two.find_element_by_xpath('//*[@id="rc_upload"]').text,
-        "Copy_of_Pan_Card": driver_two.find_element_by_xpath('//*[@id="pc_upload"]').text,
-        "Act_name": driver_two.find_element_by_xpath('//*[@id="ngo_act_name"]').text,
-        "City_of_Registration": driver_two.find_element_by_xpath('//*[@id="ngo_city_p"]').text,
-        "State of Registration": driver_two.find_element_by_xpath('//*[@id="ngo_state_p"]').text,
-        "Date_of_Registration": driver_two.find_element_by_xpath('//*[@id="ngo_reg_date"]').text,
-        "Key_Issues": driver_two.find_element_by_xpath('//*[@id="key_issues"]').text,
-        "Operational_Area_States": driver_two.find_element_by_xpath('//*[@id="operational_states"]').text,
-        "Operational_Area_District": driver_two.find_element_by_xpath('//*[@id="operational_district"]').text,
-        "FCRA_Available": driver_two.find_element_by_xpath('//*[@id="FCRA_details"]').text,
-        "FCRA_Registration_no": driver_two.find_element_by_xpath('//*[@id="FCRA_reg_no"]').text,
-        "Address": driver_two.find_element_by_xpath('//*[@id="address"]').text,
-        "City": driver_two.find_element_by_xpath('//*[@id="city"]').text,
-        "State": driver_two.find_element_by_xpath('//*[@id="state_p_ngo"]').text,
-        "Telephone": driver_two.find_element_by_xpath('//*[@id="phone_n"]').text,
-        "Mobile_No": driver_two.find_element_by_xpath('//*[@id="mobile_n"]').text,
-        "Website_Url": driver_two.find_element_by_xpath('//*[@id="ngo_web_url"]').text,
-        "E_mail": driver_two.find_element_by_xpath('//*[@id="email_n"]').text
-    }
+try:
+    last_page = driver_two.find_element_by_xpath(
+        "/html/body/div[9]/div[1]/div[3]/div/div/div[2]/ul/li[2]/a").get_attribute('data-ci-pagination-page')
+    for j in range(1, last_page + 2):
+        nextPageUrl = getNextUrl(second_links[0], j)
+        print nextPageUrl, "   nextPageUrl"
+except:
+    html_list = driver_two.find_element_by_class_name('pagination')
+    items = html_list.find_elements_by_tag_name("li")
+    for item in items:
+        text = item.text
+        if text != "" and text != " " and text != ">":
+            paginated_urls.append(getNextUrl(second_links[0], text))
 
-    # for getting all data successfully we need to wait
-    sleep(3)
-    print " --------  "
-    # finally get all data of a ngo
-    print ngo_details
+one_link_scraped = []
+for url in paginated_urls:
 
-    # closing modal box
-    closing_link = driver_two.find_element_by_xpath(
-        '//*[@id="ngo_info_modal"]/div[2]/div/div[1]/button')
-    closing_link.click()
-    # sleep again
-    sleep(2)
+    # for opening new url
+    driver_two.get(url)
+    # sleep because we need to load full page
+    sleep(5)
+    one_page_scraped = []
+    for i in range(1, 11):
+        # when page is loaded get the element
+        try:
+            clickable_link = driver_two.find_element_by_xpath(
+                "/html/body/div[9]/div[1]/div[3]/div/div/div[2]/table/tbody/tr[" + str(i) + "]/td[2]/a")
+
+            # click on that element
+            clickable_link.click()
+
+            # for opening modal we need to wait
+            sleep(3)
+
+            # getting all data which we require
+            ngo_details = {
+                "Unique_Id": driver_two.find_element_by_xpath('//*[@id="UniqueID"]').text,
+                "Registered_With": driver_two.find_element_by_xpath('//*[@id="reg_with"]').text,
+                "Type_of_NGO": driver_two.find_element_by_xpath('//*[@id="ngo_type"]').text,
+                "Registration_No": driver_two.find_element_by_xpath('//*[@id="ngo_regno"]').text,
+                "Copy_of_Registration_Certificate": driver_two.find_element_by_xpath('//*[@id="rc_upload"]').text,
+                "Copy_of_Pan_Card": driver_two.find_element_by_xpath('//*[@id="pc_upload"]').text,
+                "Act_name": driver_two.find_element_by_xpath('//*[@id="ngo_act_name"]').text,
+                "City_of_Registration": driver_two.find_element_by_xpath('//*[@id="ngo_city_p"]').text,
+                "State of Registration": driver_two.find_element_by_xpath('//*[@id="ngo_state_p"]').text,
+                "Date_of_Registration": driver_two.find_element_by_xpath('//*[@id="ngo_reg_date"]').text,
+                "Key_Issues": driver_two.find_element_by_xpath('//*[@id="key_issues"]').text,
+                "Operational_Area_States": driver_two.find_element_by_xpath('//*[@id="operational_states"]').text,
+                "Operational_Area_District": driver_two.find_element_by_xpath('//*[@id="operational_district"]').text,
+                "FCRA_Available": driver_two.find_element_by_xpath('//*[@id="FCRA_details"]').text,
+                "FCRA_Registration_no": driver_two.find_element_by_xpath('//*[@id="FCRA_reg_no"]').text,
+                "Address": driver_two.find_element_by_xpath('//*[@id="address"]').text,
+                "City": driver_two.find_element_by_xpath('//*[@id="city"]').text,
+                "State": driver_two.find_element_by_xpath('//*[@id="state_p_ngo"]').text,
+                "Telephone": driver_two.find_element_by_xpath('//*[@id="phone_n"]').text,
+                "Mobile_No": driver_two.find_element_by_xpath('//*[@id="mobile_n"]').text,
+                "Website_Url": driver_two.find_element_by_xpath('//*[@id="ngo_web_url"]').text,
+                "E_mail": driver_two.find_element_by_xpath('//*[@id="email_n"]').text
+            }
+
+            # for getting all data successfully we need to wait
+            sleep(3)
+            print " --------  "
+            # finally get all data of a ngo
+            print ngo_details
+            one_page_scraped.append(ngo_details)
+            # closing modal box
+            closing_link = driver_two.find_element_by_xpath(
+                '//*[@id="ngo_info_modal"]/div[2]/div/div[1]/button')
+            closing_link.click()
+            # sleep again
+            sleep(2)
+        except:
+            pass
+    one_link_scraped.append(one_page_scraped)
+
+
+print one_link_scraped, "   one_link_scrapedone_link_scrapedone_link_scrapedone_link_scraped"
+
+driver_two.close()
