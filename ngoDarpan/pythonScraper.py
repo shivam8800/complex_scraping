@@ -26,11 +26,11 @@ second_links = [driver.find_element_by_xpath(
 driver_two = webdriver.Chrome(
     executable_path="/usr/local/bin/chromedriver")
 
-print second_links[0], " second link"
 
 # going to one link
-driver_two.get(second_links[0])
-driver.close()
+driver_two.get(
+    "https://ngodarpan.gov.in/index.php/home/statewise_memberspav_ngo/167/30/1")
+# driver.close()
 
 
 def getNextUrl(previousUrl, pageNo):
@@ -44,10 +44,7 @@ paginated_urls = []
 
 try:
     last_page = driver_two.find_element_by_xpath(
-        "/html/body/div[9]/div[1]/div[3]/div/div/div[2]/ul/li[2]/a").get_attribute('data-ci-pagination-page')
-    for j in range(1, last_page + 2):
-        nextPageUrl = getNextUrl(second_links[0], j)
-        print nextPageUrl, "   nextPageUrl"
+        "/html/body/div[9]/div[1]/div[3]/div/div/div[2]/ul/li[14]/a").get_attribute('data-ci-pagination-page')
 except:
     html_list = driver_two.find_element_by_class_name('pagination')
     items = html_list.find_elements_by_tag_name("li")
@@ -55,6 +52,10 @@ except:
         text = item.text
         if text != "" and text != " " and text != ">":
             paginated_urls.append(getNextUrl(second_links[0], text))
+
+for j in range(1, int(last_page) + 1):
+    paginated_urls.append(getNextUrl(
+        "https://ngodarpan.gov.in/index.php/home/statewise_memberspav_ngo/167/30/1", str(j)))
 
 one_link_scraped = []
 for url in paginated_urls:
@@ -119,6 +120,7 @@ for url in paginated_urls:
     one_link_scraped.append(one_page_scraped)
 
 
+print "\n\n\n\n\n\n\n\n\n\n\n\n\n"
 print one_link_scraped, "   one_link_scrapedone_link_scrapedone_link_scrapedone_link_scraped"
 
 driver_two.close()
