@@ -1,40 +1,49 @@
 # Import newly installed selenium package
+import csv
+import threading
+from time import sleep
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from time import sleep
-import csv
+
+import multiprocessing
+
+print("Number of cpu : ", multiprocessing.cpu_count())
 
 
-# Now create an 'instance' of driver
-# with downloaded  webdriver path
-options = Options()
-options.add_argument('--headless')
-options.add_argument('--disable-gpu')  # Last I checked this was necessary.
 
-driver = webdriver.Chrome(
-    executable_path="/usr/local/bin/chromedriver", chrome_options=options)
-# A new Chrome (or other browser) window should open up
+def openBrowser():
+    # Now create an 'instance' of driver
+    # with downloaded  webdriver path
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')  # Last I checked this was necessary.
 
-# going to url
-driver.get("https://ngodarpan.gov.in/index.php/home/statewise_membersPAV")
+    driver = webdriver.Chrome(
+        executable_path="/usr/local/bin/chromedriver", chrome_options=options)
 
-# getting all links of second page
-second_links = [driver.find_element_by_xpath(
-    '//*[@id="frm_griev"]/table[2]/tbody/tr[2]/td/table/tbody/tr[5]/td/ol/li[' + str(i) + ']/a').get_attribute('href') for i in range(1, 37)]
+    # going to url
+    driver.get("https://ngodarpan.gov.in/index.php/home/statewise_membersPAV")
+
+    # getting all links of second page
+    second_links = [driver.find_element_by_xpath(
+        '//*[@id="frm_griev"]/table[2]/tbody/tr[2]/td/table/tbody/tr[5]/td/ol/li[' + str(i) + ']/a').get_attribute('href') for i in range(1, 37)]
+
+    for next_page in second_links:
+        scraped_new_page(next_page)
 
 
-# close main window
-driver.close()
-one_link_scraped = []
-for next_page in second_links:
-    scraped_new_page(next_page)
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n")
+    print("Done all")
+    # close main window
+    driver.close()
 
-print "\n\n\n\n\n\n\n\n\n\n\n\n\n"
-print one_link_scraped, "   one_link_scraped"
+    return driver
+
 
 
 def scraped_new_page(next_page):
-    print "next page     ", next_page
+    print("next page     ", next_page)
     # open up new chrome
     driver_two = webdriver.Chrome(
         executable_path="/usr/local/bin/chromedriver", chrome_options=options)
@@ -83,15 +92,12 @@ def scraped_paginated_pages(paginated_urls, driver_two, writer):
         # sleep because we need to load full page
         sleep(5)
         # scraped all data of a paginated page
-        one_page_scrape = scraped_one_paginated_page(driver_two, url, writer)
-        # save it in list
-        one_link_scraped.append(one_page_scrape)
+        scraped_one_paginated_page(driver_two, url, writer)
 
 
 def scraped_one_paginated_page(driver_two, url, writer):
-    one_page_scraped = []
     for i in range(1, 11):
-                # when page is loaded get the element
+        # when page is loaded get the element
         try:
             clickable_link = driver_two.find_element_by_xpath(
                 "/html/body/div[9]/div[1]/div[3]/div/div/div[2]/table/tbody/tr[" + str(i) + "]/td[2]/a")
@@ -132,10 +138,9 @@ def scraped_one_paginated_page(driver_two, url, writer):
             # for getting all data successfully we need to wait
             sleep(3)
             # finally get all data of a ngo
-            print ngo_details, "    ", url
+            print(ngo_details, "    ", url)
 
             writer.writerow(ngo_details)
-            one_page_scraped.append(ngo_details)
             # closing modal box
             closing_link = driver_two.find_element_by_xpath(
                 '//*[@id="ngo_info_modal"]/div[2]/div/div[1]/button')
@@ -143,4 +148,3 @@ def scraped_one_paginated_page(driver_two, url, writer):
             sleep(2)
         except:
             pass
-    return one_page_scraped
