@@ -7,46 +7,16 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 import multiprocessing
+from multiprocessing import Process
 
 print("Number of cpu : ", multiprocessing.cpu_count())
-
-
-
-def openBrowser():
-    # Now create an 'instance' of driver
-    # with downloaded  webdriver path
-    options = Options()
-    options.add_argument('--headless')
-    options.add_argument('--disable-gpu')  # Last I checked this was necessary.
-
-    driver = webdriver.Chrome(
-        executable_path="/usr/local/bin/chromedriver", chrome_options=options)
-
-    # going to url
-    driver.get("https://ngodarpan.gov.in/index.php/home/statewise_membersPAV")
-
-    # getting all links of second page
-    second_links = [driver.find_element_by_xpath(
-        '//*[@id="frm_griev"]/table[2]/tbody/tr[2]/td/table/tbody/tr[5]/td/ol/li[' + str(i) + ']/a').get_attribute('href') for i in range(1, 37)]
-
-    for next_page in second_links:
-        scraped_new_page(next_page)
-
-
-    print("\n\n\n\n\n\n\n\n\n\n\n\n\n")
-    print("Done all")
-    # close main window
-    driver.close()
-
-    return driver
-
 
 
 def scraped_new_page(next_page):
     print("next page     ", next_page)
     # open up new chrome
     driver_two = webdriver.Chrome(
-        executable_path="/usr/local/bin/chromedriver", chrome_options=options)
+        executable_path="/usr/local/bin/chromedriver", options=options)
     # going to one link
     driver_two.get(next_page)
 
@@ -148,3 +118,41 @@ def scraped_one_paginated_page(driver_two, url, writer):
             sleep(2)
         except:
             pass
+
+
+if __name__ == "__main__":  # confirms that the code is under main function
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')  # Last I checked this was necessary.
+
+    driver = webdriver.Chrome(
+        executable_path="/usr/local/bin/chromedriver", options=options)
+
+    # going to url
+    driver.get("https://ngodarpan.gov.in/index.php/home/statewise_membersPAV")
+
+    # getting all links of second page
+    second_links = [
+        driver.find_element_by_xpath(
+            '//*[@id="frm_griev"]/table[2]/tbody/tr[2]/td/table/tbody/tr[5]/td/ol/li['
+            + str(i) + ']/a').get_attribute('href') for i in range(1, 37)
+    ]
+
+    procs = []
+    proc = Process(
+        target=scraped_new_page)  # instantiating without any argument
+    procs.append(proc)
+    proc.start()
+
+    # instantiating process with arguments
+    for next_page in second_links:
+        # print(name)
+        proc = Process(target=scraped_new_page, args=(next_page, ))
+        procs.append(proc)
+        proc.start()
+
+    # complete the processes
+    for proc in procs:
+        proc.join()
+
+    driver.close()
