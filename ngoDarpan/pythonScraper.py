@@ -19,7 +19,7 @@ def scraped_new_page(next_page):
         executable_path="/usr/local/bin/chromedriver", options=options)
     # going to one link
     driver_two.get(next_page)
-
+    sleep(3)
     def getNextUrl(previousUrl, pageNo):
         url_subelement_list = previousUrl.split("/")
         url_subelement_list = url_subelement_list[:-1]
@@ -50,6 +50,7 @@ def scraped_new_page(next_page):
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         # scraped all data of a link including paginated pages
+        print(paginated_urls, "paginated_urls")
         scraped_paginated_pages(paginated_urls, driver_two, writer)
         driver_two.close()
 
