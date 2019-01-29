@@ -56,7 +56,6 @@ def scraped_new_page(next_page):
 
 
 def scraped_paginated_pages(paginated_urls, driver_two, writer):
-    threads = []
 
     for url in paginated_urls:
 
@@ -65,16 +64,7 @@ def scraped_paginated_pages(paginated_urls, driver_two, writer):
         # sleep because we need to load full page
         sleep(5)
         # scraped all data of a paginated page
-        # scraped_one_paginated_page(driver_two, url, writer)
-        threads.append(
-            threading.Thread(
-                target=scraped_one_paginated_page,
-                args=(driver_two, url, writer)))
-        threads[-1].start()
-
-    # wait for all threads to finish
-    for t in threads:
-        t.join()
+        scraped_one_paginated_page(driver_two, url, writer)
 
 
 def scraped_one_paginated_page(driver_two, url, writer):
